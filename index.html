@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>데일리핏</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #EDEDED; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; color: #111; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  #app { max-width: 430px; min-height: 100vh; margin: 0 auto; background: #FFF; position: relative; padding-bottom: 80px; }
+
+  /* 상단 바 */
+  .top { position: sticky; top: 0; z-index: 5; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #FFF; border-bottom: 1px solid #EEE; }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .top .icons { display: flex; gap: 14px; align-items: center; }
+  .back { font-size: 28px; line-height: 1; padding-right: 8px; }
+  .cart-btn { position: relative; font-size: 15px; font-weight: 600; }
+  .badge { display: inline-flex; vertical-align: 1px; margin-left: 4px; min-width: 18px; height: 18px; border-radius: 9px; background: #111; color: #FFF; font-size: 11px; align-items: center; justify-content: center; padding: 0 5px; }
+
+  /* 홈 */
+  .banner { margin: 12px 16px; padding: 20px; background: #F3EFE8; border-radius: 12px; }
+  .banner b { display: block; font-size: 18px; margin-bottom: 4px; }
+  .banner span { font-size: 13px; color: #666; }
+  .chips { display: flex; gap: 8px; padding: 4px 16px 12px; overflow-x: auto; }
+  .chip { flex: none; padding: 7px 14px; border: 1px solid #DDD; border-radius: 18px; font-size: 13px; }
+  .chip.on { background: #111; color: #FFF; border-color: #111; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 10px; padding: 0 16px; }
+  .card { text-align: left; }
+  .thumb { aspect-ratio: 3 / 4; background: #F1EEE9; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .card .brand { font-size: 12px; color: #888; margin-top: 8px; }
+  .card .name { font-size: 14px; margin-top: 2px; line-height: 1.35; }
+  .price-row { display: flex; gap: 6px; align-items: baseline; margin-top: 4px; }
+  .dc { color: #E5484D; font-weight: 700; }
+  .price { font-weight: 700; }
+  .card .rv { font-size: 12px; color: #888; margin-top: 4px; }
+
+  /* 상품 상세 */
+  .hero { height: 420px; background: #F1EEE9; display: flex; align-items: center; justify-content: center; position: relative; }
+  .counter { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,0.45); color: #FFF; font-size: 12px; padding: 3px 9px; border-radius: 10px; }
+  .info { padding: 16px; border-bottom: 8px solid #F5F5F5; }
+  .info .brand { font-size: 13px; color: #666; }
+  .info .name { font-size: 18px; margin-top: 4px; }
+  .info .origin { font-size: 13px; color: #AAA; text-decoration: line-through; margin-top: 10px; }
+  .info .price-row { font-size: 20px; margin-top: 2px; }
+  .info .rv { font-size: 13px; color: #666; margin-top: 8px; }
+  .tabs { display: flex; border-bottom: 1px solid #EEE; position: sticky; top: 52px; background: #FFF; z-index: 4; }
+  .tab { flex: 1; padding: 13px 0; font-size: 14px; color: #888; text-align: center; }
+  .tab.on { color: #111; font-weight: 700; border-bottom: 2px solid #111; }
+  .detail-img { margin: 0 16px 8px; height: 260px; background: #F7F5F2; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #BBB; font-size: 13px; }
+  .detail-img:first-of-type { margin-top: 16px; }
+  .size-table { margin: 24px 16px; }
+  .size-table h4 { font-size: 15px; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+  th, td { border: 1px solid #E5E5E5; padding: 9px 4px; }
+  th { background: #F7F7F7; font-weight: 600; }
+  .notice { margin: 16px; font-size: 12px; color: #999; line-height: 1.6; }
+
+  /* 하단 구매 바 */
+  .bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; display: flex; gap: 8px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #FFF; border-top: 1px solid #EEE; z-index: 10; }
+  .heart { width: 52px; height: 52px; border: 1px solid #DDD; border-radius: 8px; font-size: 22px; }
+  .btn { flex: 1; height: 52px; border-radius: 8px; background: #111; color: #FFF; font-size: 16px; font-weight: 700; }
+  .btn.line { background: #FFF; color: #111; border: 1px solid #111; }
+
+  /* 옵션 시트 */
+  .dim { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 20; }
+  .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: #FFF; border-radius: 18px 18px 0 0; z-index: 21; padding: 10px 16px 0; max-height: 85vh; overflow-y: auto; }
+  .handle { width: 40px; height: 4px; border-radius: 2px; background: #D5D5D5; margin: 0 auto 14px; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .sheet-head b { font-size: 17px; }
+  .sheet .label { font-size: 13px; color: #666; margin-bottom: 8px; }
+  .radio { width: 100%; display: flex; align-items: center; gap: 10px; padding: 13px 14px; border: 1px solid #E2E2E2; border-radius: 10px; margin-bottom: 8px; font-size: 15px; }
+  .radio .dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #BBB; flex: none; }
+  .radio.on { border: 2px solid #111; }
+  .radio.on .dot { border: 6px solid #111; }
+  .radio .stock { margin-left: auto; font-size: 13px; color: #E5484D; }
+  .radio:disabled { color: #BBB; }
+  .warn { font-size: 13px; color: #E5484D; margin: 4px 0 8px; }
+  .sheet .bottom-bar { position: sticky; transform: none; left: 0; margin: 8px -16px 0; width: auto; }
+
+  /* 장바구니 */
+  .cart-item { display: flex; gap: 12px; padding: 16px; border-bottom: 1px solid #F0F0F0; }
+  .cart-item .thumb { width: 84px; flex: none; }
+  .cart-item .tx { flex: 1; font-size: 14px; }
+  .cart-item .op { font-size: 13px; color: #888; margin-top: 4px; }
+  .qty { display: inline-flex; align-items: center; border: 1px solid #DDD; border-radius: 6px; margin-top: 10px; }
+  .qty button { width: 30px; height: 28px; font-size: 16px; }
+  .qty span { width: 28px; text-align: center; font-size: 13px; }
+  .remove { font-size: 13px; color: #999; align-self: flex-start; }
+  .sum { display: flex; justify-content: space-between; padding: 18px 16px; font-size: 16px; font-weight: 700; }
+  .empty { padding: 80px 16px; text-align: center; color: #888; }
+  .empty .btn { display: inline-block; width: auto; padding: 0 28px; margin-top: 20px; line-height: 52px; }
+
+  /* 주문 완료 */
+  .done { padding: 90px 24px 24px; text-align: center; }
+  .check { width: 64px; height: 64px; border-radius: 50%; background: #111; color: #FFF; font-size: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
+  .done h2 { font-size: 21px; }
+  .done p { font-size: 14px; color: #666; margin-top: 8px; line-height: 1.6; }
+
+  .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: rgba(17,17,17,0.9); color: #FFF; font-size: 14px; padding: 11px 18px; border-radius: 22px; z-index: 30; white-space: nowrap; }
+  .footer { padding: 28px 16px; font-size: 11px; color: #AAA; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ===================================================
+// 1. 상품 데이터 (실습용 가상 데이터)
+//    measure: 실측 사이즈(cm) / model: 모델 착용 정보
+//    sizeReview: 사이즈 후기 요약 / exchangeFree: 사이즈 교환 무료 여부
+// ===================================================
+const PRODUCTS = [
+  {
+    id: "denim", category: "하의", brand: "데일리핏 스탠다드", name: "와이드 데님 팬츠",
+    price: 49900, discount: 20, rating: 4.6, reviews: 128, shape: "pants", color: "#4A6A9A",
+    sizes: [{ size: "S", stock: "있음" }, { size: "M", stock: "있음" }, { size: "L", stock: "품절 임박" }],
+    measure: { cols: ["허리", "허벅지", "밑위", "총장"], rows: { S: [72, 31, 28, 100], M: [76, 32.5, 29, 101], L: [80, 34, 30, 102] } },
+    model: { height: 168, weight: 54, size: "M" },
+    sizeReview: { count: 128, small: 62, fit: 31, large: 7,
+      similar: [
+        { body: "165cm · 55kg", bought: "M", text: "허리가 살짝 작아요. 평소 M인데 L도 괜찮았을 듯해요." },
+        { body: "168cm · 53kg", bought: "M", text: "길이는 딱 좋고 허리는 조금 타이트해요." },
+        { body: "162cm · 52kg", bought: "L", text: "한 치수 크게 샀더니 편하게 맞아요." }
+      ] },
+    exchangeFree: true
+  },
+  {
+    id: "tee", category: "상의", brand: "데일리핏 스탠다드", name: "베이직 반팔 티셔츠",
+    price: 19900, discount: 10, rating: 4.7, reviews: 312, shape: "tee", color: "#F4F1EA",
+    sizes: [{ size: "S", stock: "있음" }, { size: "M", stock: "있음" }, { size: "L", stock: "있음" }],
+    measure: { cols: ["어깨", "가슴", "총장"], rows: { S: [44, 50, 66], M: [46, 53, 68], L: [48, 56, 70] } },
+    model: null,
+    sizeReview: { count: 96, small: 12, fit: 80, large: 8, similar: [] },
+    exchangeFree: true
+  },
+  {
+    id: "shirt", category: "상의", brand: "데일리핏", name: "오버핏 린넨 셔츠",
+    price: 39900, discount: 15, rating: 4.5, reviews: 64, shape: "shirt", color: "#D9E2EC",
+    sizes: [{ size: "M", stock: "있음" }, { size: "L", stock: "있음" }],
+    measure: null, model: { height: 172, weight: 56, size: "M" },
+    sizeReview: { count: 14, small: 20, fit: 70, large: 10, similar: [] },
+    exchangeFree: true
+  },
+  {
+    id: "cardigan", category: "아우터", brand: "데일리핏", name: "울 블렌드 니트 가디건",
+    price: 59900, discount: 25, rating: 4.8, reviews: 87, shape: "cardigan", color: "#B9A48A",
+    sizes: [{ size: "FREE", stock: "있음" }],
+    measure: { cols: ["어깨", "가슴", "총장"], rows: { FREE: [50, 58, 64] } }, model: { height: 166, weight: 50, size: "FREE" },
+    sizeReview: { count: 87, small: 5, fit: 85, large: 10, similar: [] },
+    exchangeFree: false
+  },
+  {
+    id: "skirt", category: "하의", brand: "데일리핏", name: "코튼 롱 스커트",
+    price: 34900, discount: 0, rating: 4.4, reviews: 41, shape: "skirt", color: "#2F3A2F",
+    sizes: [{ size: "S", stock: "있음" }, { size: "M", stock: "품절" }],
+    measure: null, model: null,
+    sizeReview: { count: 41, small: 30, fit: 60, large: 10, similar: [] },
+    exchangeFree: true
+  },
+  {
+    id: "bag", category: "가방", brand: "데일리핏 데일리", name: "캔버스 숄더백",
+    price: 29900, discount: 30, rating: 4.6, reviews: 205, shape: "bag", color: "#E3D7C1",
+    sizes: [{ size: "ONE SIZE", stock: "있음" }],
+    measure: null, model: null, sizeReview: null,
+    exchangeFree: false
+  }
+];
+
+// ===================================================
+// 2. 화면 상태
+// ===================================================
+const state = {
+  page: "home",          // home | detail | cart | done
+  productId: null,
+  category: "전체",
+  sheetOpen: false,      // 옵션 시트 열림 여부
+  selectedSize: null,
+  warn: false,
+  cart: [],              // { id, size, qty }
+  lastOrder: null
+};
+
+// ===================================================
+// 3. 공통 도구
+// ===================================================
+const won = (n) => n.toLocaleString("ko-KR") + "원";
+const salePrice = (p) => Math.round(p.price * (100 - p.discount) / 100 / 100) * 100;
+const findProduct = (id) => PRODUCTS.find((p) => p.id === id);
+const cartCount = () => state.cart.reduce((s, i) => s + i.qty, 0);
+
+function go(page, productId) {
+  state.page = page;
+  if (productId) state.productId = productId;
+  state.sheetOpen = false; state.selectedSize = null; state.warn = false;
+  render(); window.scrollTo(0, 0);
+}
+
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1600);
+}
+
+// 상품 이미지 (사진 대신 단순한 그림)
+function productImage(p, w) {
+  const paths = {
+    pants: '<path d="M30 10 H120 L128 60 L148 210 H86 L75 80 L64 210 H2 L22 60 Z"/>',
+    tee: '<path d="M50 15 L65 8 H85 L100 15 L140 40 L122 66 L105 55 V205 H45 V55 L28 66 L10 40 Z"/>',
+    shirt: '<path d="M50 15 L65 8 H85 L100 15 L138 45 L124 70 L106 58 V208 H44 V58 L26 70 L12 45 Z"/><path d="M75 12 V208" stroke="rgba(0,0,0,0.25)" stroke-width="2" fill="none"/>',
+    cardigan: '<path d="M48 12 L66 6 H84 L102 12 L132 40 L146 190 L128 194 L112 70 V205 H38 V70 L22 194 L4 190 L18 40 Z"/><path d="M75 10 V205" stroke="rgba(0,0,0,0.3)" stroke-width="3" fill="none"/>',
+    skirt: '<path d="M48 18 H102 L138 205 H12 Z"/>',
+    bag: '<path d="M25 80 H125 L132 200 H18 Z"/><path d="M50 80 C50 30 100 30 100 80" stroke="#8A7A60" stroke-width="7" fill="none"/>'
+  };
+  return `<svg width="${w}" height="${Math.round(w * 220 / 150)}" viewBox="0 0 150 220" fill="${p.color}" stroke="rgba(0,0,0,0.12)" aria-label="${p.name} 이미지">${paths[p.shape]}</svg>`;
+}
+
+function priceRow(p) {
+  return `<div class="price-row">${p.discount ? `<span class="dc">${p.discount}%</span>` : ""}<span class="price">${won(salePrice(p))}</span></div>`;
+}
+
+function topBar(withBack) {
+  return `<header class="top">
+    ${withBack ? `<button class="back" onclick="go('home')" aria-label="뒤로">‹</button>` : `<button class="logo" onclick="go('home')">데일리핏</button>`}
+    <div class="icons">
+      <button class="cart-btn" onclick="go('cart')">장바구니${cartCount() ? `<span class="badge">${cartCount()}</span>` : ""}</button>
+    </div>
+  </header>`;
+}
+
+// ===================================================
+// 4. 화면: 홈 (상품 목록)
+// ===================================================
+function HomePage() {
+  const cats = ["전체", "상의", "하의", "아우터", "가방"];
+  const list = PRODUCTS.filter((p) => state.category === "전체" || p.category === state.category);
+  return `${topBar(false)}
+    <div class="banner"><b>데일리 베이직 위크</b><span>매일 입기 좋은 기본템 최대 30% 할인</span></div>
+    <div class="chips">${cats.map((c) => `<button class="chip ${c === state.category ? "on" : ""}" onclick="state.category='${c}'; render()">${c}</button>`).join("")}</div>
+    <div class="grid">${list.map((p) => `
+      <button class="card" onclick="go('detail','${p.id}')">
+        <div class="thumb">${productImage(p, 100)}</div>
+        <p class="brand">${p.brand}</p>
+        <p class="name">${p.name}</p>
+        ${priceRow(p)}
+        <p class="rv">★ ${p.rating} · 리뷰 ${p.reviews}</p>
+      </button>`).join("")}
+    </div>
+    <p class="footer">실습용 가상 쇼핑몰입니다. 실제 판매·결제가 이루어지지 않습니다.</p>`;
+}
+
+// ===================================================
+// 5. 화면: 상품 상세
+// ===================================================
+function DetailPage() {
+  const p = findProduct(state.productId);
+  const detailImages = Array.from({ length: 12 }, (_, i) => `<div class="detail-img">상세 이미지 ${i + 1}/12</div>`).join("");
+  // 실측 사이즈 표: 상세 이미지 12장 아래, 페이지 맨 아래에 있음
+  const sizeTable = p.measure ? `
+    <div class="size-table">
+      <h4>실측 사이즈 (cm)</h4>
+      <table><tr><th>사이즈</th>${p.measure.cols.map((c) => `<th>${c}</th>`).join("")}</tr>
+      ${Object.entries(p.measure.rows).map(([s, v]) => `<tr><td>${s}</td>${v.map((x) => `<td>${x}</td>`).join("")}</tr>`).join("")}
+      </table>
+    </div>` : "";
+  return `${topBar(true)}
+    <div class="hero">${productImage(p, 220)}<span class="counter">1/5</span></div>
+    <div class="info">
+      <p class="brand">${p.brand} ›</p>
+      <p class="name">${p.name}</p>
+      ${p.discount ? `<p class="origin">${won(p.price)}</p>` : ""}
+      ${priceRow(p)}
+      <p class="rv">★ ${p.rating} · 리뷰 ${p.reviews}</p>
+    </div>
+    <div class="tabs"><span class="tab on">상품정보</span><span class="tab">리뷰 ${p.reviews}</span><span class="tab">문의</span></div>
+    ${detailImages}
+    ${sizeTable}
+    <p class="notice">배송: 결제 후 1~3일 이내 출고 · 교환/반품: 수령 후 7일 이내 신청 가능</p>
+    <div class="bottom-bar">
+      <button class="heart" aria-label="찜하기">♡</button>
+      <button class="btn" onclick="openSheet()">구매하기</button>
+    </div>
+    ${state.sheetOpen ? OptionSheet(p) : ""}`;
+}
+
+// ===================================================
+// 6. 옵션 시트 (구매하기 → 사이즈 선택)
+// ===================================================
+function openSheet() { state.sheetOpen = true; render(); }
+function closeSheet() { state.sheetOpen = false; state.selectedSize = null; state.warn = false; render(); }
+function pickSize(size) { state.selectedSize = size; state.warn = false; render(); }
+
+function OptionSheet(p) {
+  return `<div class="dim" onclick="closeSheet()"></div>
+    <div class="sheet" role="dialog" aria-label="옵션 선택">
+      <div class="handle"></div>
+      <div class="sheet-head"><b>옵션 선택</b></div>
+      <p class="label">사이즈</p>
+      ${p.sizes.map((s) => `
+        <button class="radio ${state.selectedSize === s.size ? "on" : ""}" ${s.stock === "품절" ? "disabled" : ""} onclick="pickSize('${s.size}')">
+          <span class="dot"></span>${s.size}${s.stock !== "있음" ? `<span class="stock">${s.stock}</span>` : ""}
+        </button>`).join("")}
+      ${state.warn ? `<p class="warn">사이즈를 선택해주세요</p>` : ""}
+      <div class="bottom-bar">
+        <button class="btn line" onclick="addToCart(false)">장바구니</button>
+        <button class="btn" onclick="addToCart(true)">바로 구매</button>
+      </div>
+    </div>`;
+}
+
+function addToCart(buyNow) {
+  if (!state.selectedSize) { state.warn = true; render(); return; }
+  const item = state.cart.find((i) => i.id === state.productId && i.size === state.selectedSize);
+  if (item) item.qty += 1; else state.cart.push({ id: state.productId, size: state.selectedSize, qty: 1 });
+  if (buyNow) { go("cart"); return; }
+  closeSheet(); toast("장바구니에 담았어요");
+}
+
+// ===================================================
+// 7. 화면: 장바구니
+// ===================================================
+function changeQty(i, d) { state.cart[i].qty = Math.max(1, state.cart[i].qty + d); render(); }
+function removeItem(i) { state.cart.splice(i, 1); render(); }
+const cartTotal = () => state.cart.reduce((s, i) => s + salePrice(findProduct(i.id)) * i.qty, 0);
+
+function CartPage() {
+  if (!state.cart.length) return `${topBar(true)}<div class="empty">장바구니가 비어 있어요<br><button class="btn" onclick="go('home')">쇼핑하러 가기</button></div>`;
+  return `${topBar(true)}
+    ${state.cart.map((i, idx) => { const p = findProduct(i.id); return `
+      <div class="cart-item">
+        <div class="thumb">${productImage(p, 50)}</div>
+        <div class="tx"><p>${p.name}</p><p class="op">${i.size} · ${won(salePrice(p))}</p>
+          <div class="qty"><button onclick="changeQty(${idx},-1)">−</button><span>${i.qty}</span><button onclick="changeQty(${idx},1)">+</button></div>
+        </div>
+        <button class="remove" onclick="removeItem(${idx})">삭제</button>
+      </div>`; }).join("")}
+    <div class="sum"><span>총 결제 금액</span><span>${won(cartTotal())}</span></div>
+    <div class="bottom-bar"><button class="btn" onclick="order()">${won(cartTotal())} 주문하기</button></div>`;
+}
+
+function order() { state.lastOrder = { count: cartCount(), total: cartTotal() }; state.cart = []; go("done"); }
+
+// ===================================================
+// 8. 화면: 주문 완료
+// ===================================================
+function DonePage() {
+  const o = state.lastOrder || { count: 0, total: 0 };
+  return `<div class="done"><div class="check">✓</div><h2>주문이 완료되었어요</h2>
+    <p>상품 ${o.count}개 · ${won(o.total)}<br>실습용 가상 주문이라 실제 결제는 되지 않아요.</p></div>
+    <div class="bottom-bar"><button class="btn line" onclick="go('home')">쇼핑 계속하기</button></div>`;
+}
+
+// ===================================================
+// 9. 화면 그리기
+// ===================================================
+function render() {
+  const pages = { home: HomePage, detail: DetailPage, cart: CartPage, done: DonePage };
+  document.getElementById("app").innerHTML = pages[state.page]();
+}
+render();
+</script>
+</body>
+</html>
