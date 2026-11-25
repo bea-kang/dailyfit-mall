@@ -6,18 +6,16 @@
 - 파일: `index.html` 하나 (외부 연결 없음)
 - 흐름: 홈(상품 6개) → 상품 상세 → 구매하기 → 옵션 시트(사이즈) → 장바구니 → 주문 완료
 
-## 실습 방법
+## 실습 방법 (GPT Codex)
 
-### 방법 1. GitHub에서 포크
 1. 오른쪽 위 **Fork**를 눌러 내 계정으로 복제해주세요.
-2. 내 저장소의 `index.html`을 수정해주세요. (AI에 코드를 붙여 넣고 구현 요청서를 프롬프트로 넣어 수정한 뒤, 결과 코드로 바꿔 넣으면 됩니다.)
-3. 내 저장소 **Settings → Pages → Branch: main / (root) → Save**를 눌러주세요.
-4. 1~2분 뒤 `https://<내 아이디>.github.io/dailyfit-mall/` 주소로 접속해 확인하고 링크를 제출해주세요.
-
-### 방법 2. Gemini Canvas
-1. `index.html` 코드를 복사해 Gemini Canvas에 붙여 넣고 미리보기를 열어주세요.
-2. 구현 요청서를 프롬프트로 넣어 안 하나씩 수정해주세요.
-3. Canvas의 **공유** 버튼으로 링크를 만들어 제출해주세요.
+2. 내 저장소 **Settings → Pages → Branch: main / (root) → Save**를 눌러주세요. (처음 한 번만)
+3. ChatGPT **Codex**에서 GitHub를 연결하고 포크한 내 `dailyfit-mall` 저장소를 선택해주세요.
+4. 구현 요청서를 프롬프트로 넣어주세요. 안마다 파일을 따로 만듭니다.
+   - 예: "index.html을 복사해 a.html을 만들고, a.html만 수정해주세요. 옵션 시트(OptionSheet)의 '옵션 선택' 오른쪽에 '실측표 보기 ›' 링크를 추가하고 … 다른 화면은 바꾸지 마세요."
+5. Codex가 만든 **PR**에서 바뀐 파일과 내용을 확인한 뒤 **Merge**해주세요.
+6. 1~2분 뒤 `https://<내 아이디>.github.io/dailyfit-mall/a.html`에서 확인해주세요.
+7. 안 B는 `b.html`, 안 C는 `c.html`로 같은 방법으로 만들고, 링크 3개를 제출해주세요.
 
 ## 상품 데이터
 
